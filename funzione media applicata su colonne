@@ -1,0 +1,13 @@
+# 1. Filtriamo il DataFrame per la location "Tilton Bridge"
+# Assumiamo che il DataFrame principale si chiami 'df'
+tilton_data = df[df['location'] == 'Tilton Bridge']
+
+# 2. Estraiamo i valori della colonna 'Citrulline'
+# Rimuoviamo eventuali NaN per evitare errori nei calcoli della funzione averages
+citrulline_values = tilton_data['Citrulline'].dropna().tolist()
+
+# 3. Applichiamo la funzione definita nell'Esercizio 3
+citrulline_averages = averages(citrulline_values)
+
+# Visualizziamo il risultato
+print(f"Medie delle triplette per Citrulline a Tilton Bridge: {citrulline_averages}")
