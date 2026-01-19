@@ -1,0 +1,16 @@
+import pandas as pd
+
+df = pd.read_csv('trillium.csv')
+
+print(df.head())
+
+dictionary = {"TB" : "Tilton Bridge",
+              "PB" : "Pocket Branch",
+              "OM" : "Old Mine",
+              "CA" : "Cave",
+              "WF" : "WhiteWater Falls",
+              "BR" : "Boat Ramp",
+              "JG" : "Jocassee Gorges"
+        }
+
+df['Location'] = df['Site'].map(dictionary)
