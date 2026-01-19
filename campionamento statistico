@@ -1,14 +1,44 @@
+import pymc as pm
+import arviz as az
+import pandas as pd
+import matplotlib.pyplot as plt
 
-# ### Exercise 8 (max 4 points)
-#
-# Consider this statistical model:
-#
-# - a parameter $\alpha$ is normally distributed with $\mu = 0$ and $\sigma = 1$
-# - a parameter $\beta$ is normally distributed with $\mu = 1$ and $\sigma = 1$
-# - a parameter $\gamma$ is exponentially distributed with $\lambda = 1$
-# - the observed `Citrulline` is normally distributed with standard deviation $\gamma$ and a mean given by $\alpha + \beta \cdot S$ (where $S$ is the correspondig value of `S-Adenosyl-L-methioninamine`).
-#
-# Code this model with pymc, sample the model, and plot the summary of the resulting estimation by using `az.plot_posterior`.
-#
-#
-#
+# 1. Preparazione dei dati
+# Assicuriamoci che i dati siano numerici e senza valori mancanti
+df['Citrulline'] = pd.to_numeric(df['Citrulline'], errors='coerce')
+df['S-Adenosyl-L-methioninamine'] = pd.to_numeric(df['S-Adenosyl-L-methioninamine'], errors='coerce')
+data_clean = df.dropna(subset=['Citrulline', 'S-Adenosyl-L-methioninamine'])
+
+S = data_clean['S-Adenosyl-L-methioninamine'].values
+y_obs = data_clean['Citrulline'].values
+
+# 2. Definizione del modello PyMC
+with pm.Model() as model:
+    # Priors per i parametri (distribuzioni a priori)
+    # alpha ~ N(0, 1)
+    alpha = pm.Normal('alpha', mu=0, sigma=1)
+    
+    # beta ~ N(1, 1)
+    beta = pm.Normal('beta', mu=1, sigma=1)
+    
+    # gamma ~ Exp(lambda=1)
+    gamma = pm.Exponential('gamma', lam=1)
+    
+    # Definizione della media deterministica: mu = alpha + beta * S
+    mu = alpha + beta * S
+    
+    # Likelihood (Verosimiglianza): i dati osservati seguono una Normale
+    # con media mu e deviazione standard gamma
+    y = pm.Normal('y', mu=mu, sigma=gamma, observed=y_obs)
+    
+    # 3. Campionamento (Inference)
+    # draws=1000 genera 1000 campioni dalla distribuzione a posteriori
+    trace = pm.sample(1000, tune=1000, return_inferencedata=True)
+
+# 4. Visualizzazione della distribuzione a posteriori
+az.plot_posterior(trace, var_names=['alpha', 'beta', 'gamma'])
+plt.savefig('posterior_summary.png')
+plt.show()
+
+# Visualizzazione del riassunto statistico
+print(az.summary(trace))
