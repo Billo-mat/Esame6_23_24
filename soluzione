@@ -1,0 +1,179 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+df = pd.read_csv('trillium.csv')
+
+print(df.head())
+
+dictionary = {"TB" : "Tilton Bridge",
+              "PB" : "Pocket Branch",
+              "OM" : "Old Mine",
+              "CA" : "Cave",
+              "WF" : "WhiteWater Falls",
+              "BR" : "Boat Ramp",
+              "JG" : "Jocassee Gorges"
+        }
+
+df['Location'] = df['Site'].map(dictionary)
+
+from typing import List
+
+def averages(values: List[float]) -> List[float]:
+    """
+    Restituisce una lista di medie calcolate su triplette di valori ordinati.
+    Se l'ultimo gruppo ha meno di tre elementi, ne calcola comunque la media.
+
+    >>> averages([6.0, 1.0, 5.0, 2.0, 4.0, 3.0])
+    [2.0, 5.0]
+    >>> averages([1.0, 2.0, 3.0, 4.0, 10.0])
+    [2.0, 7.0]
+    """
+    # 1. Ordiniamo la lista originale
+    sorted_values = sorted(values)
+    
+    result = []
+    
+    # 2. Iteriamo sulla lista a salti di 3
+    for i in range(0, len(sorted_values), 3):
+        # Estraiamo la tripletta (o ciò che resta)
+        chunk = sorted_values[i : i + 3]
+        
+        # 3. Calcoliamo la media del gruppo
+        avg = sum(chunk) / len(chunk)
+        result.append(avg)
+        
+    return result
+
+# Per eseguire i test contenuti nella doctest:
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
+
+
+# 1. Filtriamo il DataFrame per la location "Tilton Bridge"
+# Assumiamo che il DataFrame principale si chiami 'df'
+tilton_data = df[df['Location'] == 'Tilton Bridge']
+
+# 2. Estraiamo i valori della colonna 'Citrulline'
+# Rimuoviamo eventuali NaN per evitare errori nei calcoli della funzione averages
+citrulline_values = tilton_data['Citrulline'].dropna().tolist()
+
+# 3. Applichiamo la funzione definita nell'Esercizio 3
+citrulline_averages = averages(citrulline_values)
+
+# Visualizziamo il risultato
+print(f"Medie delle triplette per Citrulline a Tilton Bridge: {citrulline_averages}")
+
+# 1. Identifichiamo le colonne dei composti (da 'Pyruvate' in poi)
+chemical_cols = df.columns[4:]
+
+# 2. Creiamo una copia "pulita" delle sole colonne chimiche convertite in numeri
+# Questo evita la frammentazione del DataFrame originale
+chemicals_numeric = df[chemical_cols].apply(pd.to_numeric, errors='coerce')
+
+# 3. Calcoliamo il massimo su questo nuovo oggetto temporaneo
+highest_values = chemicals_numeric.max(axis=1)
+
+# 4. Aggiungiamo il risultato al DataFrame originale
+# Usiamo .copy() sul DataFrame originale se necessario, come suggerito dal warning
+df = df.copy() 
+df['highest_chemical_value'] = highest_values
+
+# Visualizziamo il risultato
+print(df[['Site', 'highest_chemical_value']].head())
+
+# 2. Convertiamo Citrulline in numerico (fondamentale per evitare TypeError)
+df['Citrulline'] = pd.to_numeric(df['Citrulline'], errors='coerce')
+
+# 3. Puliamo i dati rimuovendo eventuali righe dove Citrulline è NaN
+plot_df = df.dropna(subset=['Citrulline'])
+
+# 4. Creiamo il grafico
+plt.figure(figsize=(10, 6))
+
+# Iteriamo su ogni sito unico per creare gli istogrammi sovrapposti
+for site in plot_df['Site'].unique():
+    subset = plot_df[plot_df['Site'] == site]
+    plt.hist(subset['Citrulline'], 
+             alpha=0.5,           # Trasparenza per vedere le sovrapposizioni
+             label=site,          # Nome del sito per la legenda
+             bins=10)             # Numero di barre
+
+# 5. Formattazione del grafico
+plt.title('Histogram of Citrulline by Collection Site', fontsize=14)
+plt.xlabel('Citrulline Concentration', fontsize=12)
+plt.ylabel('Frequency', fontsize=12)
+plt.legend(title='Location (Site)')
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+
+# Salvataggio
+plt.show()
+
+df['Citrulline'] = pd.to_numeric(df['Citrulline'], errors='coerce')
+df['S-Adenosyl-L-methioninamine'] = pd.to_numeric(df['S-Adenosyl-L-methioninamine'], errors='coerce')
+
+# 3. Rimuoviamo eventuali righe con NaN nelle colonne interessate per pulizia
+plot_df = df.dropna(subset=['Citrulline', 'S-Adenosyl-L-methioninamine'])
+
+# 4. Creiamo lo scatter plot
+# Iteriamo sulle categorie uniche di 'Status' per colorare i punti in modo differente
+for status in plot_df['Status'].unique():
+    subset = plot_df[plot_df['Status'] == status]
+    plt.scatter(subset['Citrulline'], 
+                subset['S-Adenosyl-L-methioninamine'], 
+                label=status, 
+                alpha=0.7)
+
+# 5. Formattazione e labels
+plt.xlabel('Citrulline', fontsize=12)
+plt.ylabel('S-Adenosyl-L-methioninamine', fontsize=12)
+plt.title('Scatter plot: Citrulline vs. S-Adenosyl-L-methioninamine', fontsize=14)
+plt.legend(title='Status')
+plt.grid(True, linestyle='--', alpha=0.6)
+
+# Salvataggio dell'immagine
+plt.show()
+
+import pymc as pm
+import arviz as az
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# 1. Preparazione dei dati
+# Assicuriamoci che i dati siano numerici e senza valori mancanti
+df['Citrulline'] = pd.to_numeric(df['Citrulline'], errors='coerce')
+df['S-Adenosyl-L-methioninamine'] = pd.to_numeric(df['S-Adenosyl-L-methioninamine'], errors='coerce')
+data_clean = df.dropna(subset=['Citrulline', 'S-Adenosyl-L-methioninamine'])
+
+S = data_clean['S-Adenosyl-L-methioninamine'].values
+y_obs = data_clean['Citrulline'].values
+
+# 2. Definizione del modello PyMC
+with pm.Model() as model:
+    # Priors per i parametri (distribuzioni a priori)
+    # alpha ~ N(0, 1)
+    alpha = pm.Normal('alpha', mu=0, sigma=1)
+    
+    # beta ~ N(1, 1)
+    beta = pm.Normal('beta', mu=1, sigma=1)
+    
+    # gamma ~ Exp(lambda=1)
+    gamma = pm.Exponential('gamma', lam=1)
+    
+    # Definizione della media deterministica: mu = alpha + beta * S
+    mu = alpha + beta * S
+    
+    # Likelihood (Verosimiglianza): i dati osservati seguono una Normale
+    # con media mu e deviazione standard gamma
+    y = pm.Normal('y', mu=mu, sigma=gamma, observed=y_obs)
+    
+    # 3. Campionamento (Inference)
+    # draws=1000 genera 1000 campioni dalla distribuzione a posteriori
+    trace = pm.sample(1000, tune=1000, return_inferencedata=True)
+
+# 4. Visualizzazione della distribuzione a posteriori
+az.plot_posterior(trace, var_names=['alpha', 'beta', 'gamma'])
+plt.savefig('posterior_summary.png')
+plt.show()
+
+# Visualizzazione del riassunto statistico
+print(az.summary(trace))
