@@ -1,0 +1,26 @@
+# 2. Convertiamo Citrulline in numerico (fondamentale per evitare TypeError)
+df['Citrulline'] = pd.to_numeric(df['Citrulline'], errors='coerce')
+
+# 3. Puliamo i dati rimuovendo eventuali righe dove Citrulline è NaN
+plot_df = df.dropna(subset=['Citrulline'])
+
+# 4. Creiamo il grafico
+plt.figure(figsize=(10, 6))
+
+# Iteriamo su ogni sito unico per creare gli istogrammi sovrapposti
+for site in plot_df['Site'].unique():
+    subset = plot_df[plot_df['Site'] == site]
+    plt.hist(subset['Citrulline'], 
+             alpha=0.5,           # Trasparenza per vedere le sovrapposizioni
+             label=site,          # Nome del sito per la legenda
+             bins=10)             # Numero di barre
+
+# 5. Formattazione del grafico
+plt.title('Histogram of Citrulline by Collection Site', fontsize=14)
+plt.xlabel('Citrulline Concentration', fontsize=12)
+plt.ylabel('Frequency', fontsize=12)
+plt.legend(title='Location (Site)')
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+
+# Salvataggio
+plt.show()
