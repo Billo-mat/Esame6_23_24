@@ -1,0 +1,14 @@
+
+# ### Exercise 8 (max 4 points)
+#
+# Consider this statistical model:
+#
+# - a parameter $\alpha$ is normally distributed with $\mu = 0$ and $\sigma = 1$
+# - a parameter $\beta$ is normally distributed with $\mu = 1$ and $\sigma = 1$
+# - a parameter $\gamma$ is exponentially distributed with $\lambda = 1$
+# - the observed `Citrulline` is normally distributed with standard deviation $\gamma$ and a mean given by $\alpha + \beta \cdot S$ (where $S$ is the correspondig value of `S-Adenosyl-L-methioninamine`).
+#
+# Code this model with pymc, sample the model, and plot the summary of the resulting estimation by using `az.plot_posterior`.
+#
+#
+#
