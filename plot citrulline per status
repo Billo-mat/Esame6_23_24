@@ -1,0 +1,24 @@
+df['Citrulline'] = pd.to_numeric(df['Citrulline'], errors='coerce')
+df['S-Adenosyl-L-methioninamine'] = pd.to_numeric(df['S-Adenosyl-L-methioninamine'], errors='coerce')
+
+# 3. Rimuoviamo eventuali righe con NaN nelle colonne interessate per pulizia
+plot_df = df.dropna(subset=['Citrulline', 'S-Adenosyl-L-methioninamine'])
+
+# 4. Creiamo lo scatter plot
+# Iteriamo sulle categorie uniche di 'Status' per colorare i punti in modo differente
+for status in plot_df['Status'].unique():
+    subset = plot_df[plot_df['Status'] == status]
+    plt.scatter(subset['Citrulline'], 
+                subset['S-Adenosyl-L-methioninamine'], 
+                label=status, 
+                alpha=0.7)
+
+# 5. Formattazione e labels
+plt.xlabel('Citrulline', fontsize=12)
+plt.ylabel('S-Adenosyl-L-methioninamine', fontsize=12)
+plt.title('Scatter plot: Citrulline vs. S-Adenosyl-L-methioninamine', fontsize=14)
+plt.legend(title='Status')
+plt.grid(True, linestyle='--', alpha=0.6)
+
+# Salvataggio dell'immagine
+plt.show()
