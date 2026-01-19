@@ -1,0 +1,32 @@
+from typing import List
+
+def averages(values: List[float]) -> List[float]:
+    """
+    Restituisce una lista di medie calcolate su triplette di valori ordinati.
+    Se l'ultimo gruppo ha meno di tre elementi, ne calcola comunque la media.
+
+    >>> averages([6.0, 1.0, 5.0, 2.0, 4.0, 3.0])
+    [2.0, 5.0]
+    >>> averages([1.0, 2.0, 3.0, 4.0, 10.0])
+    [2.0, 7.0]
+    """
+    # 1. Ordiniamo la lista originale
+    sorted_values = sorted(values)
+    
+    result = []
+    
+    # 2. Iteriamo sulla lista a salti di 3
+    for i in range(0, len(sorted_values), 3):
+        # Estraiamo la tripletta (o ciò che resta)
+        chunk = sorted_values[i : i + 3]
+        
+        # 3. Calcoliamo la media del gruppo
+        avg = sum(chunk) / len(chunk)
+        result.append(avg)
+        
+    return result
+
+# Per eseguire i test contenuti nella doctest:
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
