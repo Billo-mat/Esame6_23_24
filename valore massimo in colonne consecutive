@@ -1,0 +1,17 @@
+# 1. Identifichiamo le colonne dei composti (da 'Pyruvate' in poi)
+chemical_cols = df.columns[4:]
+
+# 2. Creiamo una copia "pulita" delle sole colonne chimiche convertite in numeri
+# Questo evita la frammentazione del DataFrame originale
+chemicals_numeric = df[chemical_cols].apply(pd.to_numeric, errors='coerce')
+
+# 3. Calcoliamo il massimo su questo nuovo oggetto temporaneo
+highest_values = chemicals_numeric.max(axis=1)
+
+# 4. Aggiungiamo il risultato al DataFrame originale
+# Usiamo .copy() sul DataFrame originale se necessario, come suggerito dal warning
+df = df.copy() 
+df['highest_chemical_value'] = highest_values
+
+# Visualizziamo il risultato
+print(df[['Site', 'highest_chemical_value']].head())
